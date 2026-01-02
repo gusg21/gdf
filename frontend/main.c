@@ -18,6 +18,8 @@ int main(int argc, char* argv[]) {
     GDF_UNUSED(argv);
 
     InitWindow(1600, 900, "gus dwarves");
+    InitAudioDevice();
+    SetTargetFPS(60); 
 
     // Create world.
     struct world* world = malloc(sizeof(struct world));
@@ -43,7 +45,16 @@ int main(int argc, char* argv[]) {
     // Generate world.
     world_gen(world, (struct world_gen_params){ .seed = time(NULL) });
 
+    // Play some tunes.
+    Music sift_music = LoadMusicStream("resources/music/SIFT.mp3");
+    sift_music.looping = true;
+    PlayMusicStream(sift_music);
+
     while (!WindowShouldClose()) {
+        if (IsMusicStreamPlaying(sift_music)) {
+            UpdateMusicStream(sift_music);
+        }
+
         // Input:
         Vector2 rlib_mouse_world_pos = GetScreenToWorld2D(GetMousePosition(), cam);
         struct vec2f mouse_world_pos = (struct vec2f){ rlib_mouse_world_pos.x, rlib_mouse_world_pos.y };
@@ -72,6 +83,7 @@ int main(int argc, char* argv[]) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             map_set(&world->map, mouse_map_coords,
                     (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
+            
         }
         if (IsKeyPressed(KEY_Z)) {
             map_set(&world->map, (struct map_coords){ 1, 1, ren.max_z },
@@ -123,6 +135,8 @@ int main(int argc, char* argv[]) {
         EndDrawing();
     }
 
+
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;

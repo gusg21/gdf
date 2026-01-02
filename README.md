@@ -21,3 +21,7 @@ gdf is built with CMake, so the following command will generate your platform's 
 `cmake -S . -B build/`
 
 **NOTE:** The code is platform independent but the build flags I set are Linux/GCC specific at the time of writing. You can comment them out and it should work fine on Windows or macOS.
+
+## Credits
+
+Created by Angus Goucher @gusg21. Audio by Braeden Trefethen.
