@@ -1,5 +1,5 @@
 [config]
-base_path = "resources/"
+base_path = "resources/textures/"
 
 [[render_kinds]]
 id_name = "empty"

@@ -5,7 +5,7 @@
 #include "tomlc17.h"
 
 void load_tile_kinds(struct map* map) {
-    toml_result_t result = toml_parse_file_ex("resources/tile_kinds.toml");
+    toml_result_t result = toml_parse_file_ex("resources/data/tile_kinds.toml");
     assert(result.ok);
 
     // Load the tile kind information from each array item.
@@ -24,7 +24,7 @@ void load_tile_kinds(struct map* map) {
 }
 
 void load_render_kinds(struct renderer* ren, struct map* map) {
-    toml_result_t result = toml_parse_file_ex("resources/render_kinds.toml");
+    toml_result_t result = toml_parse_file_ex("resources/data/render_kinds.toml");
     assert(result.ok);
 
     const char* base_path = toml_seek(result.toptab, "config.base_path").u.s;
