@@ -4,6 +4,7 @@ target_sources(gdf PUBLIC
     kind_load.c
     main.c 
     render.c 
+    sfx.c
     tileset.c 
 
 )

@@ -12,6 +12,7 @@
 #include "defs.h"
 #include "kind_load.h"
 #include "render.h"
+#include "sfx.h"
 
 int main(int argc, char* argv[]) {
     GDF_UNUSED(argc);
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
 
     InitWindow(1600, 900, "gus dwarves");
     InitAudioDevice();
-    SetTargetFPS(60); 
+    SetTargetFPS(60);
 
     // Create world.
     struct world* world = malloc(sizeof(struct world));
@@ -50,11 +51,11 @@ int main(int argc, char* argv[]) {
     sift_music.looping = true;
     PlayMusicStream(sift_music);
 
-    while (!WindowShouldClose()) {
-        if (IsMusicStreamPlaying(sift_music)) {
-            UpdateMusicStream(sift_music);
-        }
+    // Load our SFX.
+    struct sfx sfx;
+    sfx_load(&sfx);
 
+    while (!WindowShouldClose()) {
         // Input:
         Vector2 rlib_mouse_world_pos = GetScreenToWorld2D(GetMousePosition(), cam);
         struct vec2f mouse_world_pos = (struct vec2f){ rlib_mouse_world_pos.x, rlib_mouse_world_pos.y };
@@ -81,14 +82,11 @@ int main(int argc, char* argv[]) {
 
         // Map editing.
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            map_set(&world->map, mouse_map_coords,
+            if (map_is_solid(&world->map, mouse_map_coords)) {
+                map_set(&world->map, mouse_map_coords,
                     (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
-            
-        }
-        if (IsKeyPressed(KEY_Z)) {
-            map_set(&world->map, (struct map_coords){ 1, 1, ren.max_z },
-                    (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
-            _redraw_local_area(&ren, world, (struct map_coords){ 1, 1, ren.max_z });
+                sfx_stone_strike(&sfx);
+            }
         }
 
         // Autotiling editing.
@@ -106,7 +104,13 @@ int main(int argc, char* argv[]) {
             SaveFileText("autotileset_data.txt", autotileset_get_map());
         }
 
-        // Prepare the renderer:
+        // Update:
+        // Update the music stream.
+        if (IsMusicStreamPlaying(sift_music)) {
+            UpdateMusicStream(sift_music);
+        }
+
+        // Prepare the renderer.
         render_prepare_world(&ren, world);
 
         // Drawing:
@@ -134,7 +138,6 @@ int main(int argc, char* argv[]) {
         }
         EndDrawing();
     }
-
 
     CloseAudioDevice();
     CloseWindow();
