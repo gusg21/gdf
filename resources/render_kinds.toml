@@ -1,0 +1,14 @@
+[config]
+base_path = "resources/"
+
+[[render_kinds]]
+id_name = "empty"
+# No tileset :)
+
+[[render_kinds]]
+id_name = "rock"
+tileset = "rock_sheet.png"
+
+[[render_kinds]]
+id_name = "granite"
+tileset = "granite_sheet.png"

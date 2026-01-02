@@ -1,0 +1,7 @@
+build/
+
+# Too lazy to deal with submodules
+raylib/examples
+raylib/projects
+raylib/logo
+raylib/.github

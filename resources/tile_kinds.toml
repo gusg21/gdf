@@ -1,0 +1,13 @@
+# Tile kind "empty" is defined in the game because it's a little special. :)
+
+[[tile_kinds]]
+id_name = "rock"
+display_name = "Basic Rock"
+solid = true
+rock = true
+
+[[tile_kinds]]
+id_name = "granite"
+display_name = "Granite"
+solid = true
+rock = true
