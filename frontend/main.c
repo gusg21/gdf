@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
     // Set up camera.
     Camera2D cam = (Camera2D){ .offset = (Vector2){ 1600 / 2, 900 / 2 },  //
                                .rotation = 0.f,
-                               .target = Vector2Zero(),
+                               .target = (Vector2){ world->map.size / 2 * RENDER_TILE_SIZE,
+                                                    world->map.size / 2 * RENDER_TILE_SIZE },
                                .zoom = 2.f };
     Vector2 cam_velocity = Vector2Zero();
 
@@ -86,7 +87,7 @@ int main(int argc, char* argv[]) {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (map_is_solid(&world->map, mouse_map_coords)) {
                 map_set(&world->map, mouse_map_coords,
-                    (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
+                        (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
                 sfx_play_sound(&sfx, "stone_strike");
             }
         }
