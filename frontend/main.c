@@ -4,19 +4,23 @@
 
 #include "raylib.h"
 #include "raymath.h"
+#include "tomlc17.h"
 
 #include "autotileset.h"
 #include "world.h"
 #include "world_gen.h"
 
 #include "defs.h"
+#include "gdf_config.h"
 #include "kind_load.h"
 #include "render.h"
 #include "sfx.h"
 
 int main(int argc, char* argv[]) {
-    GDF_UNUSED(argc);
-    GDF_UNUSED(argv);
+    struct gdf_config config;
+    gdf_config_init(&config);
+    gdf_config_apply_file(&config, "gdf_config.toml");
+    gdf_config_apply_args(&config, argc, argv);
 
     InitWindow(1600, 900, "gus dwarves");
     InitAudioDevice();

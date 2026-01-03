@@ -1,0 +1,10 @@
+[config]
+base_path = "resources/"
+
+[[music]]
+id_name = "sift"
+path = "music/SIFT.mp3"
+
+[[sounds]]
+id_name = "stone_strike"
+path = "sounds/AbilityPlaced01.wav"
