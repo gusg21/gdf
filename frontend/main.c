@@ -19,7 +19,7 @@
 int main(int argc, char* argv[]) {
     struct gdf_config config;
     gdf_config_init(&config);
-    gdf_config_apply_file(&config, "gdf_config.toml");
+    gdf_config_apply_file(&config, "resources/gdf_config.toml");
     gdf_config_apply_args(&config, argc, argv);
 
     InitWindow(1600, 900, "gus dwarves");
@@ -50,14 +50,12 @@ int main(int argc, char* argv[]) {
     // Generate world.
     world_gen(world, (struct world_gen_params){ .seed = time(NULL) });
 
-    // Play some tunes.
-    Music sift_music = LoadMusicStream("resources/music/SIFT.mp3");
-    sift_music.looping = true;
-    PlayMusicStream(sift_music);
-
     // Load our SFX.
     struct sfx sfx;
-    sfx_load(&sfx);
+    sfx_init(&sfx);
+    sfx_load(&sfx, config.sfx_config_path);
+    sfx_play_music(&sfx, "sift");
+    sfx_set_mute(&sfx, config.mute_audio);
 
     while (!WindowShouldClose()) {
         // Input:
@@ -89,7 +87,7 @@ int main(int argc, char* argv[]) {
             if (map_is_solid(&world->map, mouse_map_coords)) {
                 map_set(&world->map, mouse_map_coords,
                     (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
-                sfx_stone_strike(&sfx);
+                sfx_play_sound(&sfx, "stone_strike");
             }
         }
 
@@ -109,10 +107,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Update:
-        // Update the music stream.
-        if (IsMusicStreamPlaying(sift_music)) {
-            UpdateMusicStream(sift_music);
-        }
+        sfx_update(&sfx);
 
         // Prepare the renderer.
         render_prepare_world(&ren, world);

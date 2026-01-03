@@ -78,10 +78,10 @@ void map_set(struct map* map, struct map_coords coords, struct tile tile) {
     // Push the notification events.
     map_push_event(map, (struct map_event){
                             .type = MAP_EVENT_TILE_CHANGED,
-                            .u = { .tile_changed = { .coords = coords, .floor = true, .kind = { tile.floor } } } });
+                            .u = { .tile_changed = { .coords = coords, .floor = true, .kind = map_get_kind(map, tile.floor) } } });
     map_push_event(map, (struct map_event){
                             .type = MAP_EVENT_TILE_CHANGED,
-                            .u = { .tile_changed = { .coords = coords, .floor = false, .kind = { tile.floor } } } });
+                            .u = { .tile_changed = { .coords = coords, .floor = false, .kind = map_get_kind(map, tile.wall) } } });
 }
 
 void map_set_raw(struct map* map, struct map_coords coords, struct tile tile) {

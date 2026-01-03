@@ -1,0 +1,4 @@
+[config]
+mute_audio = false
+sfx_config_path = "resources/sfx.toml"
+gameplay_music_id_name = "sift"

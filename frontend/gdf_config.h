@@ -6,6 +6,10 @@
 struct gdf_config {
     /* Whether the audio should be muted when gdf starts. */
     bool mute_audio;
+    /* The path to the sfx TOML. */
+    const char* sfx_config_path;
+    /* The gameplay background music. TODO: probably needs to be changed later. */
+    const char* gameplay_music_id_name;
 };
 
 void gdf_config_init(struct gdf_config* config);
