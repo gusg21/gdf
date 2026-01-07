@@ -10,6 +10,7 @@ I was playing a lot of Dwarf Fortress and kept thinking it would be really fun t
 - `doc/`: Miscellaneous thoughts and documentation
 - `frontend/`: The part that uses Raylib to put the game on screen
 - `gdf_int/`: The gdf internals, the entire simulation is in here. Ideally, this can be compiled and run on its own with whatever parameters and state. It knows nothing about the player or the way it's being presented
+- `gdf_ui/`: A retained mode UI library, meant to be 100% agnostic and independent from the rest of the project
 - `raylib/`: Platform/graphics/audio library (https://github.com/raysan5/raylib)
 - `resources/`: All the data, images, and sound for the game
 - `tomlc17/`: A TOML parser (https://github.com/cktan/tomlc17)
