@@ -1,0 +1,12 @@
+# This file defines the various meta-info for each type of character.
+# This data is backed by an ID number which is defined in code because the
+# core of a "kind" of object is how it behaves, which is handled in code.
+
+[[chr_kinds]]
+id = 0
+name = "Unknown"
+
+[[chr_kinds]]
+id = 1
+name = "Dwarf"
+

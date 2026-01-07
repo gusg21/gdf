@@ -1,0 +1,16 @@
+[config]
+base_path = "resources/textures/tiles/"
+
+[[render_kinds]]
+id_name = "empty"
+# No tileset :)
+
+[[render_kinds]]
+id_name = "rock"
+wall_tileset = "rock_wall_sheet.png"
+floor_tileset = "rock_floor_sheet.png"
+
+[[render_kinds]]
+id_name = "granite"
+wall_tileset = "granite_wall_sheet.png"
+floor_tileset = "granite_floor_sheet.png"

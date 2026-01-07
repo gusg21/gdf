@@ -64,29 +64,60 @@ uint32_t map_find_z_distance_to_solid(struct map* map, struct map_coords coords)
     return dist;
 }
 
-bool map_is_solid(struct map* map, struct map_coords coords) { 
+bool map_is_solid(struct map* map, struct map_coords coords) {
     struct tile* tile = map_get(map, coords);
     struct tile_kind wall_tk = map_get_kind(map, tile->wall);
     struct tile_kind floor_tk = map_get_kind(map, tile->floor);
-    
+
     return wall_tk.solid || floor_tk.solid;
- }
+}
+
+bool map_is_walkable(struct map* map, struct map_coords coords) {
+    struct tile* tile = map_get(map, coords);
+    bool is_floor_solid = map_get_kind(map, tile->floor).solid;
+    bool is_wall_solid = map_get_kind(map, tile->wall).solid;
+
+    return is_floor_solid && !is_wall_solid;  // Empty space with solid floor only.
+}
 
 void map_set(struct map* map, struct map_coords coords, struct tile tile) {
     map_set_raw(map, coords, tile);
 
     // Push the notification events.
-    map_push_event(map, (struct map_event){
-                            .type = MAP_EVENT_TILE_CHANGED,
-                            .u = { .tile_changed = { .coords = coords, .floor = true, .kind = map_get_kind(map, tile.floor) } } });
-    map_push_event(map, (struct map_event){
-                            .type = MAP_EVENT_TILE_CHANGED,
-                            .u = { .tile_changed = { .coords = coords, .floor = false, .kind = map_get_kind(map, tile.wall) } } });
+    map_push_event(
+        map, (struct map_event){
+                 .type = MAP_EVENT_TILE_CHANGED,
+                 .u = { .tile_changed = { .coords = coords, .floor = true, .kind = map_get_kind(map, tile.floor) } } });
+    map_push_event(
+        map, (struct map_event){
+                 .type = MAP_EVENT_TILE_CHANGED,
+                 .u = { .tile_changed = { .coords = coords, .floor = false, .kind = map_get_kind(map, tile.wall) } } });
 }
 
 void map_set_raw(struct map* map, struct map_coords coords, struct tile tile) {
     struct tile* tile_ptr = map_get(map, coords);
     *tile_ptr = tile;
+}
+
+void map_set_wall_kind(struct map* map, struct map_coords coords, uint32_t kind_index) {
+    struct tile* tile_ptr = map_get(map, coords);
+    tile_ptr->wall = kind_index;
+
+    map_push_event(
+        map,
+        (struct map_event){
+            .type = MAP_EVENT_TILE_CHANGED,
+            .u = { .tile_changed = { .coords = coords, .floor = false, .kind = map_get_kind(map, kind_index) } } });
+}
+
+void map_set_floor_kind(struct map* map, struct map_coords coords, uint32_t kind_index) {
+    struct tile* tile_ptr = map_get(map, coords);
+    tile_ptr->floor = kind_index;
+
+    map_push_event(
+        map, (struct map_event){
+                 .type = MAP_EVENT_TILE_CHANGED,
+                 .u = { .tile_changed = { .coords = coords, .floor = true, .kind = map_get_kind(map, kind_index) } } });
 }
 
 void map_add_kind(struct map* map, struct tile_kind new_kind) {

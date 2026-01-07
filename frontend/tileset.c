@@ -12,6 +12,10 @@ void tileset_set_texture(struct tileset* tileset, Texture tex, uint32_t tile_siz
     tileset->tiles_wide = (uint32_t)(tex.width / tile_size);
 }
 
+void tileset_set_texture_from_file(struct tileset* tileset, const char* filename, uint32_t tile_size) {
+    tileset_set_texture(tileset, LoadTexture(filename), tile_size);
+}
+
 Rectangle tileset_get_rect(struct tileset* tileset, uint32_t tile_id) {
     assert(IsTextureValid(tileset->tex) && "Invalid tileset texture!");
     assert(tileset->tiles_wide > 0 && "Invalid tileset texture!");

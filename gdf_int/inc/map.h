@@ -7,6 +7,7 @@
 #define MAP_SIZE 256
 #define MAP_TILE_COUNT MAP_SIZE * MAP_SIZE * MAP_SIZE  // 3D baybee!
 #define MAP_MAX_TILE_KIND_COUNT 256
+// #define MAP_EMPTY 0 // Probably correct, but better to use map.empty_kind_index.
 
 struct map_coords {
     int32_t x, y, z;
@@ -62,10 +63,13 @@ bool map_coords_in_bounds(struct map* map, struct map_coords coords);
 struct tile* map_get(struct map* map, struct map_coords coords);
 void map_set(struct map* map, struct map_coords coords, struct tile tile);
 void map_set_raw(struct map* map, struct map_coords coords, struct tile tile);
+void map_set_wall_kind(struct map* map, struct map_coords coords, uint32_t kind_index);
+void map_set_floor_kind(struct map* map, struct map_coords coords, uint32_t kind_index);
 struct tile_kind map_get_wall_kind(struct map* map, struct map_coords coords);
 struct tile_kind map_get_floor_kind(struct map* map, struct map_coords coords);
 uint32_t map_find_z_distance_to_solid(struct map* map, struct map_coords coords);
 bool map_is_solid(struct map* map, struct map_coords coords);
+bool map_is_walkable(struct map* map, struct map_coords coords);
 
 // Kind functions:
 void map_reset_kinds(struct map* map);

@@ -8,6 +8,14 @@ struct gdf_config {
     bool mute_audio;
     /* The path to the sfx TOML. */
     const char* sfx_config_path;
+    /* The path to load our render kind info from. */
+    const char* render_tile_kinds_config_path;
+    /* The path to load gdf_int's tile kinds from. */
+    const char* tile_kinds_config_path;
+    /* The path to load the render info for the chr kinds from. */
+    const char* render_chr_kinds_config_path;
+    /* The path to load the chr kinds from. */
+    const char* chr_kinds_config_path;
     /* The gameplay background music. TODO: probably needs to be changed later. */
     const char* gameplay_music_id_name;
 };

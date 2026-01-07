@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "raymath.h"
 #include "tomlc17.h"
@@ -28,6 +29,9 @@ static Color _depth_tint[] = {
 void render_init(struct renderer* ren, struct map* map) {
     ren->max_z = MAP_SIZE / 2;
 
+    memset(ren->render_tile_kinds, 0, sizeof(struct render_tile_kind) * MAP_MAX_TILE_KIND_COUNT);
+    memset(ren->render_chr_kinds, 0, sizeof(struct render_chr_kind) * CHRS_KINDS_MAX_COUNT);
+
     ren->map_tex = LoadRenderTexture(map->size * RENDER_TILE_SIZE, map->size * RENDER_TILE_SIZE);
 
     ren->dirty = false;
@@ -35,14 +39,14 @@ void render_init(struct renderer* ren, struct map* map) {
 
 void render_tile(struct renderer* ren, struct tile* tile, uint8_t floor_adjacency, uint8_t wall_adjacency,
                  uint32_t depth, struct vec2f world_pos) {
-    struct render_tile_kind* wall_kind = &ren->render_kinds[tile->wall];
-    struct render_tile_kind* floor_kind = &ren->render_kinds[tile->floor];
+    struct render_tile_kind* wall_kind = &ren->render_tile_kinds[tile->wall];
+    struct render_tile_kind* floor_kind = &ren->render_tile_kinds[tile->floor];
 
     if (floor_kind->has_tileset) {
-        autotileset_draw(&floor_kind->tileset, floor_adjacency, _depth_tint[depth], world_pos);
+        autotileset_draw(&floor_kind->floor_tileset, floor_adjacency, _depth_tint[depth], world_pos);
     }
     if (wall_kind->has_tileset) {
-        autotileset_draw(&wall_kind->tileset, wall_adjacency, _depth_tint[depth], world_pos);
+        autotileset_draw(&wall_kind->wall_tileset, wall_adjacency, _depth_tint[depth], world_pos);
     }
 }
 
@@ -54,6 +58,22 @@ struct map_coords render_world_pos_to_map_coords(struct renderer* ren, struct ve
     return (struct map_coords){ .x = world_pos.x / (float)RENDER_TILE_SIZE,
                                 .y = world_pos.y / (float)RENDER_TILE_SIZE,
                                 .z = ren->max_z };
+}
+
+void render_chunk_depths(struct renderer* ren, struct map* map, struct map_coords min, struct map_coords max) {
+    // Draw depths
+    for (int32_t x = min.x; x < max.x; x++) {
+        for (int32_t y = min.y; y < max.y; y++) {
+            struct map_coords map_coords = (struct map_coords){ x, y, ren->max_z };
+
+            if (map_coords_in_bounds(map, map_coords)) {
+                struct vec2f world_pos = render_map_coords_to_world_pos(map_coords);
+
+                DrawText(TextFormat("%d", map_find_z_distance_to_solid(map, map_coords)),
+                         world_pos.x + (RENDER_TILE_SIZE / 2), world_pos.y + (RENDER_TILE_SIZE / 2), 20, RED);
+            }
+        }
+    }
 }
 
 /* Renders the area from min (inclusive) to max (exclusive). */
@@ -80,19 +100,7 @@ void render_chunk(struct renderer* ren, struct map* map, struct map_coords min, 
         }
     }
 
-    // Draw depths
-    // for (int32_t x = min.x; x < max.x; x++) {
-    //     for (int32_t y = min.y; y < max.y; y++) {
-    //         struct map_coords map_coords = (struct map_coords){ x, y, ren->max_z };
-
-    //         if (map_coords_in_bounds(map, map_coords)) {
-    //             struct vec2f world_pos = render_map_coords_to_world_pos(map_coords);
-
-    //             DrawText(TextFormat("%d", map_find_z_distance_to_solid(map, map_coords)),
-    //                      world_pos.x + (RENDER_TILE_SIZE / 2), world_pos.y + (RENDER_TILE_SIZE / 2), 20, RED);
-    //         }
-    //     }
-    // }
+    // render_chunk_depths(ren, map, min, max);
 }
 
 /* Render the visible z-slices of the map. This is a heavy function! */
@@ -175,11 +183,36 @@ void render_prepare_world(struct renderer* ren, struct world* world) {
     }
 }
 
-void render_world(struct renderer* ren) {
+void render_chr(struct renderer* ren, struct chr* chr) {
+    uint32_t chr_kind_id = chr->kind;
+    struct render_chr_kind render_kind = ren->render_chr_kinds[chr_kind_id];
+    struct vec2f world_pos = render_map_coords_to_world_pos(chr->coords);
+
+    int32_t depth = ren->max_z - chr->coords.z;
+    int32_t max_depth = MAX_RENDER_DEPTH;
+    if (depth < max_depth) {
+        DrawTexture(render_kind.tex, world_pos.x, world_pos.y, _depth_tint[depth]);
+    }
+}
+
+void render_chrs(struct renderer* ren, struct chrs* chrs) {
+    for (uint32_t i = 0; i < CHRS_MAX_COUNT; i++) {
+        struct chr* chr = &chrs->all[i];
+        if (chr->alive) {
+            render_chr(ren, chr);
+        }
+    }
+}
+
+void render_world(struct renderer* ren, struct world* world) {
+    // Render cached map.
     Rectangle src = (Rectangle){
         0, 0, ren->map_tex.texture.width,
         -ren->map_tex.texture.height  // Flip the render texture!
     };
     Rectangle dst = (Rectangle){ 0, 0, ren->map_tex.texture.width, ren->map_tex.texture.height };
     DrawTexturePro(ren->map_tex.texture, src, dst, Vector2Zero(), 0.f, WHITE);
+
+    // Render characters.
+    render_chrs(ren, &world->chrs);
 }

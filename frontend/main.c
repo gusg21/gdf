@@ -16,6 +16,10 @@
 #include "render.h"
 #include "sfx.h"
 
+#define FRAMES_PER_SECOND 60.f
+#define FRAME_TIME (1.f / FRAMES_PER_SECOND)
+#define STEP_FRAME_TIME (FRAME_TIME * 5.f)
+
 int main(int argc, char* argv[]) {
     struct gdf_config config;
     gdf_config_init(&config);
@@ -43,10 +47,16 @@ int main(int argc, char* argv[]) {
     Vector2 cam_velocity = Vector2Zero();
 
     // Load the tile kinds into the world map.
-    load_tile_kinds(&world->map);
+    load_tile_kinds(&world->map, config);
 
     // Load the render kinds based of the map's tile kinds.
-    load_render_kinds(&ren, &world->map);
+    load_render_tile_kinds(&ren, &world->map, config);
+
+    // Load the chr kinds.
+    load_chr_kinds(&world->chrs, config);
+
+    // Load the render information for the chr kinds.
+    load_render_chr_kinds(&ren, config);
 
     // Generate world.
     world_gen(world, (struct world_gen_params){ .seed = time(NULL) });
@@ -55,8 +65,11 @@ int main(int argc, char* argv[]) {
     struct sfx sfx;
     sfx_init(&sfx);
     sfx_load(&sfx, config.sfx_config_path);
-    sfx_play_music(&sfx, "sift");
+    // sfx_play_music(&sfx, "sift");
     sfx_set_mute(&sfx, config.mute_audio);
+
+    // Timer for stepping.
+    float time_since_step = 0.f;
 
     while (!WindowShouldClose()) {
         // Input:
@@ -85,9 +98,8 @@ int main(int argc, char* argv[]) {
 
         // Map editing.
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (map_is_solid(&world->map, mouse_map_coords)) {
-                map_set(&world->map, mouse_map_coords,
-                        (struct tile){ .floor = world->map.empty_kind_index, .wall = world->map.empty_kind_index });
+            if (map_get_kind(&world->map, map_get(&world->map, mouse_map_coords)->wall).solid) {
+                map_set_wall_kind(&world->map, mouse_map_coords, world->map.empty_kind_index);
                 sfx_play_sound(&sfx, "stone_strike");
             }
         }
@@ -110,6 +122,13 @@ int main(int argc, char* argv[]) {
         // Update:
         sfx_update(&sfx);
 
+        // Step if we should.
+        time_since_step += GetFrameTime();
+        if (time_since_step > STEP_FRAME_TIME) {
+            time_since_step = 0.f;
+            world_step(world);
+        }
+
         // Prepare the renderer.
         render_prepare_world(&ren, world);
 
@@ -119,13 +138,17 @@ int main(int argc, char* argv[]) {
             // World-space drawing:
             BeginMode2D(cam);
             {
+                // Clear the screen.
                 ClearBackground(BLACK);
+                
+                // Render!
+                render_world(&ren, world);
 
-                render_world(&ren);
+                // Origin marker.
+                DrawLineEx(Vector2Zero(), (Vector2){ RENDER_TILE_SIZE, 0 }, 5, RED);
+                DrawLineEx(Vector2Zero(), (Vector2){ 0, RENDER_TILE_SIZE }, 5, GREEN);
 
-                DrawLineEx(Vector2Zero(), (Vector2){ 32, 0 }, 5, RED);
-                DrawLineEx(Vector2Zero(), (Vector2){ 0, 32 }, 5, GREEN);
-
+                // Draw the hovered tile.
                 struct vec2f cursor_pos = render_map_coords_to_world_pos(mouse_map_coords);
                 DrawRectangleLines(cursor_pos.x, cursor_pos.y, RENDER_TILE_SIZE, RENDER_TILE_SIZE, RED);
             }

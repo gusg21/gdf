@@ -17,6 +17,7 @@ struct tileset {
 };
 
 void tileset_set_texture(struct tileset* tileset, Texture tex, uint32_t tile_size);
+void tileset_set_texture_from_file(struct tileset* tileset, const char* filename, uint32_t tile_size);
 Rectangle tileset_get_rect(struct tileset* tileset, uint32_t tile_id);
 void tileset_draw(struct tileset* tileset, uint32_t tile_id, Color tint, struct vec2f world_pos);
 

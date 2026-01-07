@@ -1,0 +1,6 @@
+[config]
+base_path = "resources/textures/chrs/"
+
+[[render_chr_kinds]]
+id = 1
+texture = "dwarf.png"
